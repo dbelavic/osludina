@@ -64,20 +64,20 @@
 
   #temp { display: none; }
   #temp .redak { display: flex; align-items: baseline; justify-content: space-between; }
-  #tempVrijednost { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; font-size: 3.2vw; line-height: 1.05; }
-  #tempDetalji { font-size: 0.7vw; color: var(--blijedo); text-align: right; }
+  #tempVrijednost { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; font-size: 3.6vw; line-height: 1.05; }
+  #tempDetalji { font-size: 1.3vw; color: var(--blijedo); text-align: right; }
   #temp.star #tempVrijednost { color: var(--blijedo); }
 
   #prostor { flex: 1 1 auto; }
   #naslov { font-size: 1.2vw; color: var(--blijedo); text-align: center; }
 
   /* ---------- dolje: obavijesti ---------- */
-  #obavijesti { flex: 0 0 6vh; background: var(--naglasak); color: #1a1a1a; display: flex; align-items: center; overflow: hidden; position: relative; }
+  #obavijesti { flex: 0 0 8.5vh; background: var(--naglasak); color: #1a1a1a; display: flex; align-items: center; overflow: hidden; position: relative; }
   #obavijestiOznaka { flex: 0 0 auto; height: 100%; display: flex; align-items: center; padding: 0 1.4vw; background: #1a1a1a; color: var(--naglasak);
-                      font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; font-size: 1.7vw; text-transform: uppercase; letter-spacing: 0.04em; position: relative; z-index: 2; }
+                      font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; font-size: 2.2vw; text-transform: uppercase; letter-spacing: 0.04em; position: relative; z-index: 2; }
   #obavijestiOkvir { flex: 1 1 auto; height: 100%; overflow: hidden; position: relative; }
   #obavijestiTekst { position: absolute; top: 50%; left: 0; white-space: nowrap; font-family: "Barlow Semi Condensed", Arial, sans-serif;
-                     font-weight: 600; font-size: 2.1vw; transform: translate(100vw, -50%); will-change: transform; }
+                     font-weight: 600; font-size: 3.3vw; transform: translate(100vw, -50%); will-change: transform; }
   #obavijestiTekst .tocka { display: inline-block; margin: 0 2.5vw; opacity: 0.5; }
   #obavijesti.prazno { display: none; }
 </style>
@@ -328,6 +328,58 @@
     return popis;
   }
 
+  /* --- Google tablica (CSV) --- */
+
+  // Razbija CSV na retke i ćelije; poštuje navodnike ("tekst, sa zarezom").
+  function csvRetci(tekst) {
+    var retci = [], red = [], celija = "", uNavodnicima = false;
+    for (var i = 0; i < tekst.length; i++) {
+      var z = tekst.charAt(i);
+      if (uNavodnicima) {
+        if (z === '"' && tekst.charAt(i + 1) === '"') { celija += '"'; i++; }
+        else if (z === '"') uNavodnicima = false;
+        else celija += z;
+      } else if (z === '"') uNavodnicima = true;
+      else if (z === ",") { red.push(celija); celija = ""; }
+      else if (z === "\n") { red.push(celija); retci.push(red); red = []; celija = ""; }
+      else if (z !== "\r") celija += z;
+    }
+    if (celija || red.length) { red.push(celija); retci.push(red); }
+    return retci;
+  }
+
+  // Prepoznaje "3.11.2026", "3. 11. 2026.", "2026-11-03" i američki "11/3/2026".
+  function datumIzCelije(s) {
+    s = (s || "").trim();
+    if (!s) return null;
+    var b = s.match(/\d+/g);
+    if (!b || b.length < 3) return undefined; // nije datum
+    var d, m, g;
+    if (b[0].length === 4) { g = +b[0]; m = +b[1]; d = +b[2]; }
+    else if (s.indexOf("/") >= 0) { m = +b[0]; d = +b[1]; g = +b[2]; }
+    else { d = +b[0]; m = +b[1]; g = +b[2]; }
+    if (g < 100) g += 2000;
+    if (m < 1 || m > 12 || d < 1 || d > 31) return undefined;
+    return new Date(g, m - 1, d);
+  }
+
+  function procitajTablicu(tekst) {
+    if (/^\s*<!doctype|^\s*<html/i.test(tekst)) throw new Error("tablica nije objavljena kao CSV");
+    var danas = sada(); danas.setHours(0, 0, 0, 0);
+    var popis = [];
+    csvRetci(tekst).forEach(function (r, i) {
+      var tekstObav = (r[0] || "").trim();
+      if (!tekstObav || tekstObav.charAt(0) === "#") return;
+      var od = datumIzCelije(r[1]), doDat = datumIzCelije(r[2]);
+      // prvi redak je naslov ako mu stupci B/C nisu datumi (npr. "Prikazuj od")
+      if (i === 0 && (od === undefined || doDat === undefined || /^obavijest/i.test(tekstObav))) return;
+      if (od && danas < od) return;      // još nije vrijeme
+      if (doDat && danas > doDat) return; // istekla
+      popis.push(tekstObav);
+    });
+    return popis;
+  }
+
   function prikaziObavijesti(popis) {
     var kljuc = popis.join("\n");
     if (kljuc === zadnjeObavijesti) return; // ništa se nije promijenilo – ne prekidaj pomicanje
@@ -430,9 +482,14 @@
       if (bilePrazne) sljedecaSlika(0);
     }).catch(function () { /* zadrži stari popis */ });
 
-    dohvati("obavijesti.txt").then(function (t) {
-      prikaziObavijesti(procitajObavijesti(t));
-    }).catch(function () { });
+    // Obavijesti: prvo Google tablica; ako ne uspije (ili nije zadana) – obavijesti.txt
+    var izTablice = P.obavijestiTablica
+      ? dohvati(P.obavijestiTablica).then(procitajTablicu)
+      : Promise.reject(new Error("nema tablice"));
+    izTablice
+      .catch(function () { return dohvati("obavijesti.txt").then(procitajObavijesti); })
+      .then(prikaziObavijesti)
+      .catch(function () { });
 
     osvjeziTemperaturu();
   }

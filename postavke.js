@@ -44,6 +44,11 @@ var POSTAVKE = {
   sirina: 45.613,
   duzina: 16.620,
 
+  // OBAVIJESTI iz Google tablice (Datoteka → Dijeli → Objavi na webu → CSV).
+  // Stupci: A = obavijest, B = prikazuj od (datum), C = prikazuj do (datum).
+  // Ako tablica nije dostupna, koristi se obavijesti.txt. Ako je prazno, koristi se samo obavijesti.txt.
+  obavijestiTablica: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRKitnHlxAyD_ArTnayRKkcRK8XNwQVPltXMUfJmG-vk8MT6yT6ohCTThf7mjTFtYecZsrUn83Efbe/pub?output=csv",
+
   // Svakih koliko minuta se ponovno učitavaju obavijesti i popis slika
   osvjezavanjeMin: 5
 };
