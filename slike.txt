@@ -1,0 +1,17 @@
+# POPIS SLAJDOVA KOJI SE IZMJENJUJU NA ZASLONU
+# Jedan redak = jedan slajd. Datoteke su u mapi "slike".
+#
+# Više slika na istom slajdu spoji znakom +  (najviše 4):
+#   5a.jpg + 6a.jpg + 6b.jpg + 7a.jpg
+#
+# Iza slajda možeš upisati | i broj sekundi:
+#   ucionice.png | 30
+#
+# Redak koji počinje s # se ne prikazuje (tako privremeno "isključiš" slajd).
+
+5a.jpg + 6a.jpg + 6b.jpg + 7a.jpg | 20
+7b.jpg + 8a.jpg + 8b.jpg | 20
+ucionice.png | 30
+
+# Satnice – makni # ispred retka ako ih želiš prikazivati
+# satnica-predmetna.jpg + satnica-razredna.jpg | 10

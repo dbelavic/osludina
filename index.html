@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zaslon – OŠ Ludina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@500;600&display=swap&subset=latin-ext" rel="stylesheet">
+<style>
+  /* Pisano za stariji preglednik na TV-u (webOS): bez flex "gap", bez clamp(). */
+  :root {
+    --pozadina: #0f1b2d;
+    --panel: #16263d;
+    --panel2: #1d3150;
+    --tekst: #f4f1ea;
+    --blijedo: #9fb0c8;
+    --naglasak: #ffcc33;
+    --zeleno: #5fd38d;
+    --crveno: #ff7a6b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: var(--pozadina); color: var(--tekst); }
+  body { font-family: "Barlow", Arial, sans-serif; cursor: none; }
+
+  #okvir { position: absolute; left: 0; top: 0; right: 0; bottom: 0; display: flex; flex-direction: column; }
+  #gore { flex: 1 1 auto; display: flex; min-height: 0; }
+
+  /* ---------- lijevo: rasporedi ---------- */
+  #slajdovi { flex: 1 1 auto; position: relative; margin: 1.6vh 0 1.2vh 1.2vw; }
+  .sloj { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: #fff; border-radius: 1vh;
+          display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.8s ease; overflow: hidden; }
+  .sloj.vidljiv { opacity: 1; }
+  /* Jedan slajd može imati 1–4 slike. Svaka slika dobije svoju "ćeliju". */
+  .sloj { flex-wrap: wrap; align-content: center; }
+  .celija { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 1%; }
+  .sloj.n2 .celija { width: 50%; height: 100%; }
+  .sloj.n3 .celija, .sloj.n4 .celija { width: 50%; height: 50%; }
+  .celija img { max-width: 100%; max-height: 100%; display: block; }
+  .sloj.n3 .celija:nth-child(2), .sloj.n4 .celija:nth-child(2), .sloj.n4 .celija:nth-child(4),
+  .sloj.n2 .celija:nth-child(2) { border-left: 0.2vw solid #dfe4ea; }
+  .sloj.n3 .celija:nth-child(3), .sloj.n4 .celija:nth-child(3), .sloj.n4 .celija:nth-child(4) { border-top: 0.2vw solid #dfe4ea; }
+  #napredak { position: absolute; left: 0; bottom: 0; height: 0.6vh; width: 0; background: var(--naglasak); border-bottom-left-radius: 1vh; }
+
+  /* ---------- desno: sat i stanje ---------- */
+  #desno { flex: 0 0 29vw; display: flex; flex-direction: column; padding: 1.6vh 1.2vw 1.2vh 1.2vw; }
+  #sat { font-family: "Barlow Semi Condensed", Arial Narrow, Arial, sans-serif; font-weight: 700;
+         font-size: 11.4vw; line-height: 0.95; letter-spacing: -0.02em; text-align: center;
+         font-variant-numeric: tabular-nums; }
+  #sekunde { height: 0.9vh; background: var(--panel2); border-radius: 0.5vh; margin: 1.4vh 0.6vw 0; overflow: hidden; }
+  #sekundeTraka { height: 100%; width: 0; background: var(--naglasak); }
+  #dan { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 600; font-size: 2.6vw; text-align: center; margin-top: 1.4vh; text-transform: capitalize; }
+  #datum { font-size: 1.7vw; color: var(--blijedo); text-align: center; }
+
+  .kartica { background: var(--panel); border-radius: 1vh; padding: 1.3vh 1vw; margin-top: 1.5vh; }
+  .oznaka { font-size: 1.05vw; color: var(--blijedo); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  .glavno { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; font-size: 2.5vw; line-height: 1.15; margin-top: 0.3vh; }
+  .glavno .vrijeme { color: var(--blijedo); font-weight: 500; font-size: 1.7vw; margin-left: 0.5vw; }
+  .ostalo { font-size: 1.45vw; margin-top: 0.2vh; }
+  .ostalo b { color: var(--naglasak); }
+  .traka { height: 0.8vh; background: var(--panel2); border-radius: 0.4vh; margin-top: 0.9vh; overflow: hidden; }
+  .traka div { height: 100%; width: 0; background: var(--zeleno); }
+  .odmor .traka div { background: var(--naglasak); }
+
+  #temp { display: none; }
+  #temp .redak { display: flex; align-items: baseline; justify-content: space-between; }
+  #tempVrijednost { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; font-size: 3.6vw; line-height: 1.05; }
+  #tempDetalji { font-size: 1.3vw; color: var(--blijedo); text-align: right; }
+  #temp.star #tempVrijednost { color: var(--blijedo); }
+
+  #prostor { flex: 1 1 auto; }
+  #naslov { font-size: 1.2vw; color: var(--blijedo); text-align: center; }
+
+  /* ---------- dolje: obavijesti ---------- */
+  #obavijesti { flex: 0 0 8.5vh; background: var(--naglasak); color: #1a1a1a; display: flex; align-items: center; overflow: hidden; position: relative; }
+  #obavijestiOznaka { flex: 0 0 auto; height: 100%; display: flex; align-items: center; padding: 0 1.4vw; background: #1a1a1a; color: var(--naglasak);
+                      font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; font-size: 2.2vw; text-transform: uppercase; letter-spacing: 0.04em; position: relative; z-index: 2; }
+  #obavijestiOkvir { flex: 1 1 auto; height: 100%; overflow: hidden; position: relative; }
+  #obavijestiTekst { position: absolute; top: 50%; left: 0; white-space: nowrap; font-family: "Barlow Semi Condensed", Arial, sans-serif;
+                     font-weight: 600; font-size: 3.3vw; transform: translate(100vw, -50%); will-change: transform; }
+  #obavijestiTekst .tocka { display: inline-block; margin: 0 2.5vw; opacity: 0.5; }
+  #obavijesti.prazno { display: none; }
+</style>
+</head>
+<body>
+<div id="okvir">
+  <div id="gore">
+    <div id="slajdovi">
+      <div class="sloj" id="slojA"></div>
+      <div class="sloj" id="slojB"></div>
+      <div id="napredak"></div>
+    </div>
+
+    <div id="desno">
+      <div id="sat">--:--</div>
+      <div id="sekunde"><div id="sekundeTraka"></div></div>
+      <div id="dan">&nbsp;</div>
+      <div id="datum">&nbsp;</div>
+
+      <div class="kartica" id="predmetna">
+        <div class="oznaka">Predmetna nastava</div>
+        <div class="glavno">&nbsp;</div>
+        <div class="ostalo">&nbsp;</div>
+        <div class="traka"><div></div></div>
+      </div>
+
+      <div class="kartica" id="razredna">
+        <div class="oznaka">Razredna nastava</div>
+        <div class="glavno">&nbsp;</div>
+        <div class="ostalo">&nbsp;</div>
+        <div class="traka"><div></div></div>
+      </div>
+
+      <div class="kartica" id="temp">
+        <div class="oznaka">Školska meteostanica</div>
+        <div class="redak">
+          <div id="tempVrijednost">–</div>
+          <div id="tempDetalji"></div>
+        </div>
+      </div>
+
+      <div id="prostor"></div>
+      <div id="naslov"></div>
+    </div>
+  </div>
+
+  <div id="obavijesti" class="prazno">
+    <div id="obavijestiOznaka">Obavijesti</div>
+    <div id="obavijestiOkvir"><div id="obavijestiTekst"></div></div>
+  </div>
+</div>
+
+<script src="postavke.js"></script>
+<script>
+(function () {
+  var P = window.POSTAVKE || {};
+  var DANI = ["nedjelja", "ponedjeljak", "utorak", "srijeda", "četvrtak", "petak", "subota"];
+  var MJESECI = ["siječnja", "veljače", "ožujka", "travnja", "svibnja", "lipnja", "srpnja",
+                 "kolovoza", "rujna", "listopada", "studenoga", "prosinca"];
+
+  function $(id) { return document.getElementById(id); }
+  function dvije(n) { return (n < 10 ? "0" : "") + n; }
+
+  /* ------------------------------------------------------------
+     TOČNO VRIJEME
+     Sat na TV-u može kasniti ili žuriti. Svaki put kad stranica
+     dohvati datoteku s poslužitelja, poslužitelj u odgovoru pošalje
+     svoje vrijeme (zaglavlje "Date"). Iz razlike računamo pomak
+     i sat na ekranu ispravljamo za taj pomak.
+     ------------------------------------------------------------ */
+  var pomakMs = 0;
+  function sada() { return new Date(Date.now() + pomakMs); }
+
+  function uskladiIz(odgovor, poslano, primljeno) {
+    var d = odgovor.headers.get("Date");
+    if (!d) return;
+    var posluzitelj = Date.parse(d);
+    if (isNaN(posluzitelj)) return;
+    // vrijeme poslužitelja odgovara otprilike sredini puta zahtjeva
+    var lokalno = (poslano + primljeno) / 2;
+    var novi = posluzitelj + 500 - lokalno; // "Date" je zaokružen na sekundu → +0,5 s
+    // mali pomaci (ispod 1,5 s) su unutar nesigurnosti mjerenja – zanemari ih
+    pomakMs = Math.abs(novi) < 1500 ? 0 : novi;
+  }
+
+  function dohvati(url) {
+    var poslano = Date.now();
+    return fetch(url + (url.indexOf("?") < 0 ? "?" : "&") + "t=" + poslano, { cache: "no-store" })
+      .then(function (r) {
+        uskladiIz(r, poslano, Date.now());
+        if (!r.ok) throw new Error(url + " " + r.status);
+        return r.text();
+      });
+  }
+
+  /* ---------------- SAT I DATUM ---------------- */
+  function minute(hhmm) { var p = hhmm.split(":"); return (+p[0]) * 60 + (+p[1]); }
+
+  function osvjeziSat() {
+    var t = sada();
+    $("sat").textContent = t.getHours() + ":" + dvije(t.getMinutes());
+    $("sekundeTraka").style.width = ((t.getSeconds() + t.getMilliseconds() / 1000) / 60 * 100) + "%";
+    $("dan").textContent = DANI[t.getDay()];
+    $("datum").textContent = t.getDate() + ". " + MJESECI[t.getMonth()] + " " + t.getFullYear() + ".";
+    stanjeNastave("predmetna", P.satnicaPredmetna || [], t);
+    stanjeNastave("razredna", P.satnicaRazredna || [], t);
+  }
+
+  function josMin(sek) {
+    var m = Math.ceil(sek / 60);
+    return "još <b>" + m + " min</b>";
+  }
+
+  function stanjeNastave(id, satnica, t) {
+    var el = $(id);
+    var glavno = el.querySelector(".glavno"), ostalo = el.querySelector(".ostalo"),
+        traka = el.querySelector(".traka div");
+    el.className = "kartica";
+    var sek = t.getHours() * 3600 + t.getMinutes() * 60 + t.getSeconds();
+    var dan = t.getDay();
+
+    function postavi(g, o, posto, odmor) {
+      glavno.innerHTML = g; ostalo.innerHTML = o;
+      traka.style.width = (posto || 0) + "%";
+      if (odmor) el.className = "kartica odmor";
+    }
+
+    if (!satnica.length) { el.style.display = "none"; return; }
+    if (dan === 0 || dan === 6) { postavi("Vikend", "Nema nastave", 0); return; }
+
+    var prviPoc = minute(satnica[0][0]) * 60;
+    var zadnjiKraj = minute(satnica[satnica.length - 1][1]) * 60;
+
+    if (sek < prviPoc) {
+      var doPoc = prviPoc - sek;
+      postavi("Prije nastave", "1. sat počinje u " + satnica[0][0] +
+              (doPoc <= 3600 ? " · " + josMin(doPoc) : ""), 0, true);
+      return;
+    }
+    if (sek >= zadnjiKraj) { postavi("Nastava je završila", "Do sutra!", 0); return; }
+
+    for (var i = 0; i < satnica.length; i++) {
+      var poc = minute(satnica[i][0]) * 60, kraj = minute(satnica[i][1]) * 60;
+      if (sek >= poc && sek < kraj) {
+        postavi((i + 1) + ". sat<span class=\"vrijeme\">" + satnica[i][0] + " – " + satnica[i][1] + "</span>",
+                "do kraja sata " + josMin(kraj - sek), (sek - poc) / (kraj - poc) * 100);
+        return;
+      }
+      var sljedeci = satnica[i + 1];
+      if (sljedeci) {
+        var sljPoc = minute(sljedeci[0]) * 60;
+        if (sek >= kraj && sek < sljPoc) {
+          var dugi = (sljPoc - kraj) >= 15 * 60;
+          postavi(dugi ? "Veliki odmor" : "Odmor",
+                  (i + 2) + ". sat počinje za " + josMin(sljPoc - sek).replace("još ", ""),
+                  (sek - kraj) / (sljPoc - kraj) * 100, true);
+          return;
+        }
+      }
+    }
+  }
+
+  /* ---------------- IZMJENA SLIKA ---------------- */
+  var slike = [];          // [{datoteka, sekunde}]
+  var indeks = -1;
+  var aktivni = "slojA";
+  var vremenik = null;
+
+  function procitajSlike(tekst) {
+    var popis = [];
+    tekst.split(/\r?\n/).forEach(function (red) {
+      red = red.trim();
+      if (!red || red.charAt(0) === "#") return;
+      var dijelovi = red.split("|");
+      var sekunde = parseInt(dijelovi[1], 10);
+      // "5a.jpg + 6a.jpg + 6b.jpg + 7a.jpg" → jedan slajd s četiri slike (najviše 4)
+      var datoteke = dijelovi[0].split("+").map(function (d) { return d.trim(); })
+                                .filter(function (d) { return d; }).slice(0, 4);
+      if (datoteke.length) popis.push({ datoteke: datoteke, sekunde: sekunde > 0 ? sekunde : (P.trajanjeSlike || 15) });
+    });
+    return popis;
+  }
+
+  // Verzija se mijenja svaki sat: nova slika s istim imenom pojavi se najkasnije za sat vremena,
+  // a TV ne skida sve slike iznova svakih nekoliko minuta.
+  function verzija() { var t = sada(); return t.getFullYear() + "" + t.getMonth() + t.getDate() + "-" + t.getHours(); }
+
+  function sljedecaSlika(pokusaji) {
+    clearTimeout(vremenik);
+    if (!slike.length) { vremenik = setTimeout(function () { sljedecaSlika(0); }, 5000); return; }
+    pokusaji = pokusaji || 0;
+    if (pokusaji > slike.length) { vremenik = setTimeout(function () { sljedecaSlika(0); }, 10000); return; }
+
+    indeks = (indeks + 1) % slike.length;
+    var s = slike[indeks];
+    var skriveni = aktivni === "slojA" ? "slojB" : "slojA";
+    var sloj = $(skriveni);
+
+    // Učitaj sve slike slajda u pozadini; prikaži ga tek kad su sve gotove.
+    var ucitane = [], preostalo = s.datoteke.length;
+    s.datoteke.forEach(function (ime, i) {
+      var img = new Image();
+      img.onload = function () { ucitane[i] = img; gotovo(); };
+      img.onerror = function () { gotovo(); }; // slika ne postoji → izostavi je
+      img.src = "slike/" + encodeURIComponent(ime) + "?v=" + verzija();
+    });
+
+    function gotovo() {
+      if (--preostalo > 0) return;
+      var dobre = ucitane.filter(function (x) { return x; });
+      if (!dobre.length) { sljedecaSlika(pokusaji + 1); return; }
+      sloj.innerHTML = "";
+      dobre.forEach(function (img) {
+        var c = document.createElement("div"); c.className = "celija"; c.appendChild(img); sloj.appendChild(c);
+      });
+      sloj.className = "sloj n" + dobre.length + " vidljiv";
+      $(aktivni).className = $(aktivni).className.replace(" vidljiv", "");
+      aktivni = skriveni;
+      pokreniNapredak(s.sekunde);
+      vremenik = setTimeout(function () { sljedecaSlika(0); }, s.sekunde * 1000);
+    }
+  }
+
+  function pokreniNapredak(sekunde) {
+    var n = $("napredak");
+    n.style.transition = "none"; n.style.width = "0";
+    void n.offsetWidth; // prisili preglednik da primijeni širinu 0 prije animacije
+    n.style.transition = "width " + sekunde + "s linear"; n.style.width = "100%";
+  }
+
+  /* ---------------- OBAVIJESTI ---------------- */
+  var zadnjeObavijesti = "";
+
+  function procitajObavijesti(tekst) {
+    var danas = sada(); danas.setHours(0, 0, 0, 0);
+    var popis = [];
+    tekst.split(/\r?\n/).forEach(function (red) {
+      red = red.trim();
+      if (!red || red.charAt(0) === "#") return;
+      var m = red.match(/^do\s+(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})\.?\s*\|\s*(.*)$/i);
+      if (m) {
+        var istek = new Date(+m[3], +m[2] - 1, +m[1]);
+        if (danas > istek) return; // obavijest je istekla
+        red = m[4];
+      }
+      if (red) popis.push(red);
+    });
+    return popis;
+  }
+
+  function prikaziObavijesti(popis) {
+    var kljuc = popis.join("\n");
+    if (kljuc === zadnjeObavijesti) return; // ništa se nije promijenilo – ne prekidaj pomicanje
+    zadnjeObavijesti = kljuc;
+    var okvir = $("obavijesti"), el = $("obavijestiTekst");
+    if (!popis.length) { okvir.className = "prazno"; return; }
+    okvir.className = "";
+    el.innerHTML = "";
+    popis.forEach(function (o, i) {
+      if (i) { var t = document.createElement("span"); t.className = "tocka"; t.textContent = "●"; el.appendChild(t); }
+      var s = document.createElement("span"); s.textContent = o; el.appendChild(s);
+    });
+    pomakniObavijesti();
+  }
+
+  // Tekst putuje s desna na lijevo stalnom brzinom, bez obzira na duljinu.
+  var animacijaId = null;
+  function pomakniObavijesti() {
+    if (animacijaId) cancelAnimationFrame(animacijaId);
+    var el = $("obavijestiTekst"), sirinaOkvira = $("obavijestiOkvir").offsetWidth;
+    var brzina = window.innerWidth / 11; // px u sekundi
+    var start = null;
+    function korak(ts) {
+      if (start === null) start = ts;
+      var put = (ts - start) / 1000 * brzina;
+      var x = sirinaOkvira - put;
+      if (x < -el.offsetWidth) { start = ts; x = sirinaOkvira; }
+      el.style.transform = "translate(" + Math.round(x) + "px,-50%)";
+      animacijaId = requestAnimationFrame(korak);
+    }
+    animacijaId = requestAnimationFrame(korak);
+  }
+
+  /* ---------------- TEMPERATURA ---------------- */
+  /*
+    Redoslijed:
+    1. školska stanica (Weather Underground) – ako postoji ključ i podatak nije stariji od 45 min
+    2. inače Open-Meteo – izračunata vrijednost za koordinate Velike Ludine (bez ključa)
+    3. ako ne radi ni jedno – zadnja prikazana vrijednost ostaje, ali posivi
+  */
+  var STAR_PODATAK_MS = 45 * 60000;
+
+  function iz_skolske_stanice() {
+    if (!P.wuKljuc || !P.stanica) return Promise.reject(new Error("nema ključa"));
+    var url = "https://api.weather.com/v2/pws/observations/current?stationId=" + encodeURIComponent(P.stanica) +
+              "&format=json&units=m&numericPrecision=decimal&apiKey=" + encodeURIComponent(P.wuKljuc);
+    return fetch(url, { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("WU " + r.status); return r.json(); })
+      .then(function (d) {
+        var o = d && d.observations && d.observations[0];
+        if (!o || !o.metric || typeof o.metric.temp !== "number") throw new Error("WU bez podataka");
+        var izmjereno = new Date(o.epoch * 1000);
+        if (sada() - izmjereno > STAR_PODATAK_MS) throw new Error("stanica ne šalje podatke");
+        return { temp: o.metric.temp, vlaga: o.humidity, vrijeme: izmjereno, izvor: "Školska meteostanica" };
+      });
+  }
+
+  function iz_open_meteo() {
+    var url = "https://api.open-meteo.com/v1/forecast?latitude=" + (P.sirina || 45.613) +
+              "&longitude=" + (P.duzina || 16.620) +
+              "&current=temperature_2m,relative_humidity_2m&timezone=UTC";
+    return fetch(url, { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("Open-Meteo " + r.status); return r.json(); })
+      .then(function (d) {
+        var c = d && d.current;
+        if (!c || typeof c.temperature_2m !== "number") throw new Error("Open-Meteo bez podataka");
+        return { temp: c.temperature_2m, vlaga: c.relative_humidity_2m,
+                 vrijeme: new Date(c.time + "Z"), izvor: (P.mjesto || "Velika Ludina") + " · procjena" };
+      });
+  }
+
+  function prikaziTemperaturu(t) {
+    var kartica = $("temp");
+    kartica.style.display = "block";
+    kartica.querySelector(".oznaka").textContent = t.izvor;
+    $("tempVrijednost").textContent = t.temp.toFixed(1).replace(".", ",") + " °C";
+    var detalji = [];
+    if (typeof t.vlaga === "number") detalji.push("vlaga " + Math.round(t.vlaga) + " %");
+    detalji.push("u " + t.vrijeme.getHours() + ":" + dvije(t.vrijeme.getMinutes()));
+    $("tempDetalji").innerHTML = detalji.join("<br>");
+    kartica.className = "kartica";
+  }
+
+  function osvjeziTemperaturu() {
+    iz_skolske_stanice()
+      .catch(function () { return iz_open_meteo(); })
+      .then(prikaziTemperaturu)
+      .catch(function () {
+        $("temp").className = "kartica star"; // zadrži zadnju vrijednost, ali je posivi
+      });
+  }
+
+  /* ---------------- UČITAVANJE PODATAKA ---------------- */
+  function osvjeziPodatke() {
+    dohvati("slike.txt").then(function (t) {
+      var novo = procitajSlike(t);
+      var bilePrazne = !slike.length;
+      slike = novo;
+      if (indeks >= slike.length) indeks = -1;
+      if (bilePrazne) sljedecaSlika(0);
+    }).catch(function () { /* zadrži stari popis */ });
+
+    dohvati("obavijesti.txt").then(function (t) {
+      prikaziObavijesti(procitajObavijesti(t));
+    }).catch(function () { });
+
+    osvjeziTemperaturu();
+  }
+
+  /* ---------------- POKRETANJE ---------------- */
+  $("naslov").textContent = P.naslov || "";
+  osvjeziSat();
+  setInterval(osvjeziSat, 250);
+  osvjeziPodatke();
+  setInterval(osvjeziPodatke, (P.osvjezavanjeMin || 5) * 60000);
+  window.addEventListener("resize", pomakniObavijesti);
+
+  // Jednom dnevno (u 5:00) ponovno učitaj cijelu stranicu – tako TV povuče i promjene u kodu.
+  setInterval(function () {
+    var t = sada();
+    if (t.getHours() === 5 && t.getMinutes() === 0) location.reload();
+  }, 60000);
+})();
+</script>
+</body>
+</html>
