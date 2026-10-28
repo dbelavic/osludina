@@ -5,4 +5,4 @@
 # Redak koji počinje s # se ne prikazuje.
 
 Dobro došli u OŠ Ludina!
-do 31.12.2026 | Primjer obavijesti s datumom isteka – nakon 31. 12. sama nestaje.
+do 31.10.2026 | Probna obavijest .. 
