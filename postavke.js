@@ -37,7 +37,7 @@ var POSTAVKE = {
   stanica: "IVELIK6",
   // API ključ: wunderground.com → prijava vlasnika stanice → "API Keys".
   // Ako je prazno (ili stanica ne šalje podatke), koristi se Open-Meteo.
-  wuKljuc: "",
+  wuKljuc: "041dd97bada647339dd97bada6d733bc",
 
   // 2) Rezerva: Open-Meteo (bez ključa) – procjena za ove koordinate
   mjesto: "Velika Ludina",
