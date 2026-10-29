@@ -9,9 +9,10 @@
 #
 # Redak koji počinje s # se ne prikazuje (tako privremeno "isključiš" slajd).
 
-5a.jpg + 6a.jpg + 6b.jpg + 7a.jpg | 20
-7b.jpg + 8a.jpg + 8b.jpg | 20
-ucionice.png | 30
+petak1.png + petak2.png | 30
+5a.jpg + 6a.jpg + 6b.jpg + 7a.jpg | 15
+7b.jpg + 8a.jpg + 8b.jpg | 15
+ucionice.png | 15
 
 # Satnice – makni # ispred retka ako ih želiš prikazivati
 # satnica-predmetna.jpg + satnica-razredna.jpg | 10
