@@ -9,7 +9,7 @@ rasporedi razreda koji se izmjenjuju, temperatura sa školske meteostanice i oba
 |---|---|
 | Novi raspored razreda | mapa `slike/` – učitaj novu sliku **s istim imenom** (npr. `6b.jpg`) |
 | Dodati ili maknuti sliku iz izmjene, složiti više slika na jedan slajd (`5a.jpg + 6a.jpg`) | `slike.txt` |
-| Obavijesti na dnu ekrana | `obavijesti.txt` |
+| Obavijesti na dnu ekrana | `obavijesti.txt` ili na https://docs.google.com/spreadsheets/d/1KSMKtg0wg-sZMu7dTIp5mKvilrjw4bkzRqfnc_Xpf6g/edit?usp=sharing |
 | Satnica, trajanje slika, ključ za školsku stanicu, koordinate za rezervnu temperaturu | `postavke.js` |
 
 Promjene se na TV-u pojave same:
