@@ -1,5 +1,5 @@
 # Zaslon – OŠ Ludina
-
+Nalazi se na ovoj adresi https://dbelavic.github.io/osludina/
 Stranica za TV u holu: veliki sat, stanje nastave (koji je sat, koliko je ostalo),
 rasporedi razreda koji se izmjenjuju, temperatura sa školske meteostanice i obavijesti.
 
