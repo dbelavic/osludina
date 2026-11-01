@@ -27,6 +27,8 @@ Promjene se na TV-u pojave same:
 ## Obavijesti
 
 U `obavijesti.txt` jedan redak = jedna obavijest. Obavijest koja treba sama nestati:
+Obavijesti se upisuju ovdje u google dokument
+https://docs.google.com/spreadsheets/d/1KSMKtg0wg-sZMu7dTIp5mKvilrjw4bkzRqfnc_Xpf6g/edit?usp=sharing
 
 ```
 do 5.11.2026 | Roditeljski sastanak 6. razreda u četvrtak u 17 h
