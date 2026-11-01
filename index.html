@@ -43,9 +43,9 @@
   #napredak { position: absolute; left: 0; bottom: 0; height: 0.6vh; width: 0; background: var(--naglasak); border-bottom-left-radius: 1vh; }
 
   /* ---------- desno: sat i stanje ---------- */
-  #desno { flex: 0 0 29vw; display: flex; flex-direction: column; padding: 1.6vh 1.2vw 1.2vh 1.2vw; }
+  #desno { flex: 0 0 29vw; width: 29vw; min-width: 0; display: flex; flex-direction: column; padding: 1.6vh 1.2vw 1.2vh 1.2vw; }
   #sat { font-family: "Barlow Semi Condensed", Arial Narrow, Arial, sans-serif; font-weight: 700;
-         font-size: 11.4vw; line-height: 0.95; letter-spacing: -0.02em; text-align: center;
+         font-size: 10.6vw; white-space: nowrap; line-height: 0.95; letter-spacing: -0.02em; text-align: center;
          font-variant-numeric: tabular-nums; }
   #sekunde { height: 0.9vh; background: var(--panel2); border-radius: 0.5vh; margin: 1.4vh 0.6vw 0; overflow: hidden; }
   #sekundeTraka { height: 100%; width: 0; background: var(--naglasak); }
@@ -61,6 +61,30 @@
   .traka { height: 0.8vh; background: var(--panel2); border-radius: 0.4vh; margin-top: 0.9vh; overflow: hidden; }
   .traka div { height: 100%; width: 0; background: var(--zeleno); }
   .odmor .traka div { background: var(--naglasak); }
+
+  /* Blok "stanje": kad se PN i RN razlikuju (oko 3. sata), dva manja retka */
+  #stanje .redPNRN { margin-top: 0.2vh; }
+  #stanje .redPNRN + .redPNRN { margin-top: 1.1vh; padding-top: 0.9vh; border-top: 1px solid var(--panel2); }
+  #stanje .koja { font-size: 0.95vw; color: var(--blijedo); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  /* u dva retka: "3. sat" lijevo, "do kraja sata još 25 min" desno, u istoj liniji */
+  #stanje .redPNRN .linija { display: flex; align-items: baseline; justify-content: space-between; }
+  #stanje .redPNRN .glavno { font-size: 1.7vw; margin-top: 0; white-space: nowrap; }
+  #stanje .redPNRN .glavno .vrijeme { display: none; } /* vremena su u satnici ispod */
+  #stanje .redPNRN .ostalo { font-size: 1.15vw; margin: 0 0 0 0.6vw; white-space: nowrap; }
+  #stanje .redPNRN .traka { height: 0.6vh; margin-top: 0.5vh; }
+
+  /* Blok "satnica" */
+  #satnica { padding: 1vh 1vw; }
+  #satnica table { width: 100%; border-collapse: collapse; font-size: 1.3vw; font-variant-numeric: tabular-nums; }
+  #satnica td { padding: 0.25vh 0.5vw; white-space: nowrap; }
+  #satnica td.br { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; width: 1%; }
+  #satnica td.vr { text-align: right; color: var(--blijedo); }
+  #satnica td.ozn { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; font-size: 1vw; color: var(--blijedo); width: 1%; padding-right: 0; }
+  #satnica tr.grupa td { background: rgba(255,255,255,0.035); }
+  #satnica tr.razmak td { padding: 0; height: 0.6vh; background: none; }
+  #satnica tr.sada td { background: var(--naglasak); color: #1a1a1a; }
+  #satnica tr.sada td.vr, #satnica tr.sada td.ozn { color: #1a1a1a; }
+  #satnica tr.gotovo td { opacity: 0.4; }
 
   #temp { display: none; }
   #temp .redak { display: flex; align-items: baseline; justify-content: space-between; }
@@ -97,19 +121,11 @@
       <div id="dan">&nbsp;</div>
       <div id="datum">&nbsp;</div>
 
-      <div class="kartica" id="predmetna">
-        <div class="oznaka">Predmetna nastava</div>
-        <div class="glavno">&nbsp;</div>
-        <div class="ostalo">&nbsp;</div>
-        <div class="traka"><div></div></div>
-      </div>
+      <!-- Što se sada događa (jedan blok za PN i RN) -->
+      <div class="kartica" id="stanje"></div>
 
-      <div class="kartica" id="razredna">
-        <div class="oznaka">Razredna nastava</div>
-        <div class="glavno">&nbsp;</div>
-        <div class="ostalo">&nbsp;</div>
-        <div class="traka"><div></div></div>
-      </div>
+      <!-- Satnica; trenutni sat je označen žuto -->
+      <div class="kartica" id="satnica"></div>
 
       <div class="kartica" id="temp">
         <div class="oznaka">Školska meteostanica</div>
@@ -182,8 +198,10 @@
     $("sekundeTraka").style.width = ((t.getSeconds() + t.getMilliseconds() / 1000) / 60 * 100) + "%";
     $("dan").textContent = DANI[t.getDay()];
     $("datum").textContent = t.getDate() + ". " + MJESECI[t.getMonth()] + " " + t.getFullYear() + ".";
-    stanjeNastave("predmetna", P.satnicaPredmetna || [], t);
-    stanjeNastave("razredna", P.satnicaRazredna || [], t);
+    var pn = izracunajStanje(P.satnicaPredmetna || [], t);
+    var rn = izracunajStanje(P.satnicaRazredna || [], t);
+    prikaziStanje(pn, rn);
+    oznaciSatnicu(t);
   }
 
   function josMin(sek) {
@@ -191,53 +209,145 @@
     return "još <b>" + m + " min</b>";
   }
 
-  function stanjeNastave(id, satnica, t) {
-    var el = $(id);
-    var glavno = el.querySelector(".glavno"), ostalo = el.querySelector(".ostalo"),
-        traka = el.querySelector(".traka div");
-    el.className = "kartica";
+  /*
+    Za jednu satnicu izračuna što se sada događa.
+    Vraća: { glavno, ostalo, posto, odmor, zavrsila, sat }
+      sat = redni broj sata koji upravo traje (1, 2, …) ili 0
+  */
+  function izracunajStanje(satnica, t) {
     var sek = t.getHours() * 3600 + t.getMinutes() * 60 + t.getSeconds();
     var dan = t.getDay();
-
-    function postavi(g, o, posto, odmor) {
-      glavno.innerHTML = g; ostalo.innerHTML = o;
-      traka.style.width = (posto || 0) + "%";
-      if (odmor) el.className = "kartica odmor";
+    function s(g, o, posto, odmor, zavrsila, sat) {
+      return { glavno: g, ostalo: o, posto: posto || 0, odmor: !!odmor, zavrsila: !!zavrsila, sat: sat || 0 };
     }
 
-    if (!satnica.length) { el.style.display = "none"; return; }
-    if (dan === 0 || dan === 6) { postavi("Vikend", "Nema nastave", 0); return; }
+    if (!satnica.length) return s("", "", 0, false, true);
+    if (dan === 0 || dan === 6) return s("Vikend", "Nema nastave", 0, false, true);
 
     var prviPoc = minute(satnica[0][0]) * 60;
     var zadnjiKraj = minute(satnica[satnica.length - 1][1]) * 60;
 
     if (sek < prviPoc) {
       var doPoc = prviPoc - sek;
-      postavi("Prije nastave", "1. sat počinje u " + satnica[0][0] +
-              (doPoc <= 3600 ? " · " + josMin(doPoc) : ""), 0, true);
-      return;
+      return s("Prije nastave", "1. sat počinje u " + satnica[0][0] +
+               (doPoc <= 3600 ? " · " + josMin(doPoc) : ""), 0, true);
     }
-    if (sek >= zadnjiKraj) { postavi("Nastava je završila", "Do sutra!", 0); return; }
+    if (sek >= zadnjiKraj) return s("Nastava je završila", "Do sutra!", 0, false, true);
 
     for (var i = 0; i < satnica.length; i++) {
       var poc = minute(satnica[i][0]) * 60, kraj = minute(satnica[i][1]) * 60;
       if (sek >= poc && sek < kraj) {
-        postavi((i + 1) + ". sat<span class=\"vrijeme\">" + satnica[i][0] + " – " + satnica[i][1] + "</span>",
-                "do kraja sata " + josMin(kraj - sek), (sek - poc) / (kraj - poc) * 100);
-        return;
+        return s((i + 1) + ". sat<span class=\"vrijeme\">" + satnica[i][0] + " – " + satnica[i][1] + "</span>",
+                 "do kraja sata " + josMin(kraj - sek), (sek - poc) / (kraj - poc) * 100, false, false, i + 1);
       }
       var sljedeci = satnica[i + 1];
       if (sljedeci) {
         var sljPoc = minute(sljedeci[0]) * 60;
         if (sek >= kraj && sek < sljPoc) {
           var dugi = (sljPoc - kraj) >= 15 * 60;
-          postavi(dugi ? "Veliki odmor" : "Odmor",
-                  (i + 2) + ". sat počinje za " + josMin(sljPoc - sek).replace("još ", ""),
-                  (sek - kraj) / (sljPoc - kraj) * 100, true);
-          return;
+          return s(dugi ? "Veliki odmor" : "Odmor",
+                   (i + 2) + ". sat počinje za " + josMin(sljPoc - sek).replace("još ", ""),
+                   (sek - kraj) / (sljPoc - kraj) * 100, true);
         }
       }
     }
+    return s("", "");
+  }
+
+  function blokHTML(st) {
+    return "<div class=\"linija\"><div class=\"glavno\">" + st.glavno + "</div>" +
+           "<div class=\"ostalo\">" + st.ostalo + "</div></div>" +
+           "<div class=\"traka\"><div style=\"width:" + st.posto.toFixed(2) + "%\"></div></div>";
+  }
+
+  /*
+    Jedan blok za obje nastave.
+    - PN i RN pokazuju isto            → jedan veliki prikaz
+    - razredna je gotova, predmetna ne → prikaži samo predmetnu (7. sat)
+    - razlikuju se (oko 3. sata)       → dva manja retka: Predmetna / Razredna
+  */
+  function prikaziStanje(pn, rn) {
+    var el = $("stanje"), html, odmor;
+    var isto = pn.glavno === rn.glavno && pn.ostalo === rn.ostalo;
+    // 10:40–10:45: PN je "Veliki odmor", RN "Odmor", ali oboje "4. sat počinje za …" → to je isto
+    var istiOdmor = pn.odmor && rn.odmor && pn.ostalo === rn.ostalo;
+
+    if (isto || istiOdmor || (rn.zavrsila && !pn.zavrsila)) {
+      var st = pn;
+      if (istiOdmor && !isto) { st = {}; for (var k in pn) st[k] = pn[k]; st.glavno = "Odmor"; }
+      html = blokHTML(st);
+      odmor = st.odmor;
+    } else {
+      html = "<div class=\"redPNRN" + (pn.odmor ? " odmor" : "") + "\"><div class=\"koja\">Predmetna nastava</div>" + blokHTML(pn) + "</div>" +
+             "<div class=\"redPNRN" + (rn.odmor ? " odmor" : "") + "\"><div class=\"koja\">Razredna nastava</div>" + blokHTML(rn) + "</div>";
+      odmor = false;
+    }
+    if (el.innerHTML !== html) el.innerHTML = html;
+    el.className = "kartica" + (odmor ? " odmor" : "");
+  }
+
+  /* ---------------- SATNICA (tablica desno) ---------------- */
+  /*
+    Satovi s istim vremenom u PN i RN prikazuju se jednom ("1. sat").
+    Satovi s različitim vremenom (3. sat) dobiju dva retka: PN i RN.
+    Svaki redak pamti na koje sate se odnosi, da ga možemo označiti dok traje.
+  */
+  var retciSatnice = []; // [{tr, pn: broj sata ili 0, rn: broj sata ili 0, kraj: sekunde}]
+
+  function nacrtajSatnicu() {
+    var pnS = P.satnicaPredmetna || [], rnS = P.satnicaRazredna || [];
+    var tablica = document.createElement("table");
+    retciSatnice = [];
+    var n = Math.max(pnS.length, rnS.length);
+    var prosliRazlicit = false;
+
+    function redak(oznaka, br, vrijeme, pnBr, rnBr, grupa) {
+      var tr = tablica.insertRow(-1);
+      if (grupa) tr.className = "grupa";
+      tr.innerHTML = "<td class=\"ozn\">" + oznaka + "</td><td class=\"br\">" + br + ". sat</td>" +
+                     "<td class=\"vr\">" + vrijeme[0] + " – " + vrijeme[1] + "</td>";
+      retciSatnice.push({ tr: tr, pn: pnBr, rn: rnBr, kraj: minute(vrijeme[1]) * 60 });
+    }
+    function razmak() { var tr = tablica.insertRow(-1); tr.className = "razmak"; tr.innerHTML = "<td colspan=\"3\"></td>"; }
+
+    for (var i = 0; i < n; i++) {
+      var p = pnS[i], r = rnS[i];
+      var razlicit = p && r && (p[0] !== r[0] || p[1] !== r[1]);
+      if (razlicit) {
+        if (i > 0) razmak();
+        redak("PN", i + 1, p, i + 1, 0, true);
+        redak("RN", i + 1, r, 0, i + 1, true);
+      } else {
+        if (prosliRazlicit) razmak();
+        if (p) redak("", i + 1, p, i + 1, r ? i + 1 : 0);
+        else if (r) redak("", i + 1, r, 0, i + 1);
+      }
+      prosliRazlicit = razlicit;
+    }
+
+    // stupac oznaka (PN/RN) potreban je samo ako postoji barem jedan različit sat
+    var imaOznaka = retciSatnice.some(function (x) { return x.tr.className === "grupa"; });
+    if (!imaOznaka) Array.prototype.forEach.call(tablica.querySelectorAll("td.ozn"), function (td) { td.style.display = "none"; });
+
+    var el = $("satnica");
+    el.innerHTML = "";
+    el.appendChild(tablica);
+  }
+
+  function oznaciSatnicu(t) {
+    if (!retciSatnice.length) return;
+    var sek = t.getHours() * 3600 + t.getMinutes() * 60 + t.getSeconds();
+    var radniDan = t.getDay() !== 0 && t.getDay() !== 6;
+    var pnSat = izracunajStanje(P.satnicaPredmetna || [], t).sat;
+    var rnSat = izracunajStanje(P.satnicaRazredna || [], t).sat;
+    retciSatnice.forEach(function (x) {
+      var cls = x.tr.className.replace(/\s*(sada|gotovo)/g, "");
+      var sada = radniDan && ((x.pn && x.pn === pnSat) || (x.rn && x.rn === rnSat));
+      if (sada) cls += " sada";
+      else if (radniDan && sek >= x.kraj) cls += " gotovo";
+      cls = cls.trim();
+      if (x.tr.className !== cls) x.tr.className = cls;
+    });
   }
 
   /* ---------------- IZMJENA SLIKA ---------------- */
@@ -496,6 +606,7 @@
 
   /* ---------------- POKRETANJE ---------------- */
   $("naslov").textContent = P.naslov || "";
+  nacrtajSatnicu();
   osvjeziSat();
   setInterval(osvjeziSat, 250);
   osvjeziPodatke();
