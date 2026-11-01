@@ -42,59 +42,59 @@
   .sloj.n3 .celija:nth-child(3), .sloj.n4 .celija:nth-child(3), .sloj.n4 .celija:nth-child(4) { border-top: 0.2vw solid #dfe4ea; }
   #napredak { position: absolute; left: 0; bottom: 0; height: 0.6vh; width: 0; background: var(--naglasak); border-bottom-left-radius: 1vh; }
 
-  /* ---------- desno: sat i stanje ---------- */
-  #desno { flex: 0 0 29vw; width: 29vw; min-width: 0; display: flex; flex-direction: column; padding: 1.6vh 1.2vw 1.2vh 1.2vw; }
+    /* ---------- desno: sat i stanje ---------- */
+  /* Veličine su u vh (postotak VISINE ekrana), pa sve stane i na nižem ekranu (laptop). */
+  #desno { flex: 0 0 29vw; width: 29vw; min-width: 0; display: flex; flex-direction: column; padding: 1.4vh 1.2vw 1vh 1.2vw; }
   #sat { font-family: "Barlow Semi Condensed", Arial Narrow, Arial, sans-serif; font-weight: 700;
-         font-size: 10.6vw; white-space: nowrap; line-height: 0.95; letter-spacing: -0.02em; text-align: center;
+         font-size: 16vh; white-space: nowrap; line-height: 0.95; letter-spacing: -0.02em; text-align: center;
          font-variant-numeric: tabular-nums; }
-  #sekunde { height: 0.9vh; background: var(--panel2); border-radius: 0.5vh; margin: 1.4vh 0.6vw 0; overflow: hidden; }
+  #sekunde { height: 0.8vh; background: var(--panel2); border-radius: 0.4vh; margin: 1vh 0.6vw 0; overflow: hidden; }
   #sekundeTraka { height: 100%; width: 0; background: var(--naglasak); }
-  #dan { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 600; font-size: 2.6vw; text-align: center; margin-top: 1.4vh; text-transform: capitalize; }
-  #datum { font-size: 1.7vw; color: var(--blijedo); text-align: center; }
+  #dan { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 600; font-size: 3.8vh; line-height: 1.1; text-align: center; margin-top: 0.8vh; text-transform: capitalize; }
+  #datum { font-size: 2.5vh; color: var(--blijedo); text-align: center; }
 
-  .kartica { background: var(--panel); border-radius: 1vh; padding: 1.3vh 1vw; margin-top: 1.5vh; }
-  .oznaka { font-size: 1.05vw; color: var(--blijedo); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
-  .glavno { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; font-size: 2.5vw; line-height: 1.15; margin-top: 0.3vh; }
-  .glavno .vrijeme { color: var(--blijedo); font-weight: 500; font-size: 1.7vw; margin-left: 0.5vw; }
-  .ostalo { font-size: 1.45vw; margin-top: 0.2vh; }
+  .kartica { background: var(--panel); border-radius: 1vh; padding: 1.1vh 1vw; margin-top: 1.2vh; }
+  .oznaka { font-size: 1.6vh; color: var(--blijedo); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  .glavno { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; font-size: 3.8vh; line-height: 1.15; }
+  .glavno .vrijeme { color: var(--blijedo); font-weight: 500; font-size: 2.6vh; margin-left: 0.5vw; }
+  .ostalo { font-size: 2.3vh; margin-top: 0.1vh; }
   .ostalo b { color: var(--naglasak); }
-  .traka { height: 0.8vh; background: var(--panel2); border-radius: 0.4vh; margin-top: 0.9vh; overflow: hidden; }
+  .traka { height: 0.7vh; background: var(--panel2); border-radius: 0.4vh; margin-top: 0.8vh; overflow: hidden; }
   .traka div { height: 100%; width: 0; background: var(--zeleno); }
   .odmor .traka div { background: var(--naglasak); }
 
   /* Blok "stanje": kad se PN i RN razlikuju (oko 3. sata), dva manja retka */
-  #stanje .redPNRN { margin-top: 0.2vh; }
-  #stanje .redPNRN + .redPNRN { margin-top: 1.1vh; padding-top: 0.9vh; border-top: 1px solid var(--panel2); }
-  #stanje .koja { font-size: 0.95vw; color: var(--blijedo); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  #stanje .redPNRN + .redPNRN { margin-top: 0.9vh; padding-top: 0.7vh; border-top: 1px solid var(--panel2); }
+  #stanje .koja { font-size: 1.5vh; color: var(--blijedo); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
   /* u dva retka: "3. sat" lijevo, "do kraja sata još 25 min" desno, u istoj liniji */
   #stanje .redPNRN .linija { display: flex; align-items: baseline; justify-content: space-between; }
-  #stanje .redPNRN .glavno { font-size: 1.7vw; margin-top: 0; white-space: nowrap; }
+  #stanje .redPNRN .glavno { font-size: 2.8vh; white-space: nowrap; }
   #stanje .redPNRN .glavno .vrijeme { display: none; } /* vremena su u satnici ispod */
-  #stanje .redPNRN .ostalo { font-size: 1.15vw; margin: 0 0 0 0.6vw; white-space: nowrap; }
-  #stanje .redPNRN .traka { height: 0.6vh; margin-top: 0.5vh; }
+  #stanje .redPNRN .ostalo { font-size: 1.9vh; margin: 0 0 0 0.6vw; white-space: nowrap; }
+  #stanje .redPNRN .traka { height: 0.5vh; margin-top: 0.4vh; }
 
   /* Blok "satnica" */
-  #satnica { padding: 1vh 1vw; }
-  #satnica table { width: 100%; border-collapse: collapse; font-size: 1.3vw; font-variant-numeric: tabular-nums; }
-  #satnica td { padding: 0.25vh 0.5vw; white-space: nowrap; }
+  #satnica { padding: 0.8vh 1vw; }
+  #satnica table { width: 100%; border-collapse: collapse; font-size: 2.1vh; font-variant-numeric: tabular-nums; }
+  #satnica td { padding: 0.15vh 0.5vw; white-space: nowrap; }
   #satnica td.br { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; width: 1%; }
   #satnica td.vr { text-align: right; color: var(--blijedo); }
-  #satnica td.ozn { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; font-size: 1vw; color: var(--blijedo); width: 1%; padding-right: 0; }
+  #satnica td.ozn { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; font-size: 1.6vh; color: var(--blijedo); width: 1%; padding-right: 0; }
   #satnica tr.grupa td { background: rgba(255,255,255,0.035); }
-  #satnica tr.razmak td { padding: 0; height: 0.6vh; background: none; }
+  #satnica tr.razmak td { padding: 0; height: 0.5vh; background: none; }
   #satnica tr.sada td { background: var(--naglasak); color: #1a1a1a; }
   #satnica tr.sada td.vr, #satnica tr.sada td.ozn { color: #1a1a1a; }
   #satnica tr.gotovo td { opacity: 0.4; }
 
   #temp { display: none; }
   #temp .redak { display: flex; align-items: baseline; justify-content: space-between; }
-  #tempVrijednost { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; font-size: 2.1vw; line-height: 1.05; }
-  #tempDetalji { font-size: 0.9vw; color: var(--blijedo); text-align: right; }
+  #tempVrijednost { font-family: "Barlow Semi Condensed", Arial, sans-serif; font-weight: 700; font-size: 3.6vh; line-height: 1.05; }
+  #tempDetalji { font-size: 1.6vh; color: var(--blijedo); text-align: right; }
   #temp.star #tempVrijednost { color: var(--blijedo); }
 
   #prostor { flex: 1 1 auto; }
-  #naslov { font-size: 1.0vw; color: var(--blijedo); text-align: center; }
-
+  #naslov { font-size: 1.6vh; color: var(--blijedo); text-align: center; }
+  
   /* ---------- dolje: obavijesti ---------- */
   #obavijesti { flex: 0 0 7vh; background: var(--naglasak); color: #1a1a1a; display: flex; align-items: center; overflow: hidden; position: relative; }
   #obavijestiOznaka { flex: 0 0 auto; height: 100%; display: flex; align-items: center; padding: 0 1.4vw; background: #1a1a1a; color: var(--naglasak);
