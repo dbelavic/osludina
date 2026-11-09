@@ -13,7 +13,7 @@
 # 7b.jpg + 8a.jpg + 8b.jpg | 15
 # ucionice.png | 15
 
-grupe1.jpg + grupe2.jpg | 20
+grupe12.jpg + grupe34.jpg + grupe56.jpg + grupe78.jpg | 20
 grupa-12.jpg + grupa-34.jpg + grupa-56.jpg + grupa-78.jpg | 20
 
 
